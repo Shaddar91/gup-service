@@ -49,6 +49,8 @@ terraform.rc
 # Build outputs
 /build
 /dist
+/node_modules
+node_modules
 
 # Debug logs
 npm-debug.log*
