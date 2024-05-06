@@ -1,0 +1,38 @@
+name: uploader-service
+
+on:
+  push:
+    branches: [ "master", "develop" ]
+  pull_request:
+    branches: [ "develop" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assume Role
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.CICD_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.CICD_ACCESS_KEY }}
+      - uses: actions/checkout@v3
+        id: checkout
+      - name: Login to Amazon ECR Private
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+      - name: Build, tag, and push docker image to Amazon ECR Public
+        env:
+          REPOSITORY: ${{ secrets.APP_NAME }} 
+          BRANCH_NAME: ${{ github.ref_name }} 
+        run: |
+          REGISTRY=$(aws sts get-caller-identity | jq -r .Account).dkr.ecr.$AWS_REGION.amazonaws.com
+          IMAGE_TAG=$(echo $GITHUB_SHA|awk '{print substr($0,length($0)-10,11)}')
+          echo "Registry: $REGISTRY"
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REGISTRY
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker tag $REGISTRY/$REPOSITORY:$IMAGE_TAG $REGISTRY/$REPOSITORY:$BRANCH_NAME
+          docker push $REGISTRY/$REPOSITORY:$BRANCH_NAME
+          
