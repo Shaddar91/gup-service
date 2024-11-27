@@ -1,0 +1,17 @@
+{
+  "name": "gup-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.1",
+    "google-auth-library": "^9.6.3",
+    "googleapis": "^133.0.0",
+    "puppeteer": "^22.0.0"
+  }
+}
